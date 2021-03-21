@@ -1,4 +1,4 @@
-import React from "react";
+import React, { useEffect } from "react";
 import clsx from "clsx";
 import { makeStyles, useTheme } from "@material-ui/core/styles";
 import Drawer from "@material-ui/core/Drawer";
@@ -26,6 +26,11 @@ import TableCell from "@material-ui/core/TableCell";
 import TableContainer from "@material-ui/core/TableContainer";
 import TableHead from "@material-ui/core/TableHead";
 import TableRow from "@material-ui/core/TableRow";
+
+import { useSelector, useDispatch } from "react-redux";
+import { listUsers } from "../actions/userActions";
+
+import Loader from "../components/Loader";
 
 const drawerWidth = 240;
 
@@ -86,7 +91,23 @@ const useStyles = makeStyles((theme) => ({
   },
 }));
 
-export default function PersistentDrawerLeft() {
+export default function Offer({ history }) {
+  const dispatch = useDispatch();
+
+  const userList = useSelector((state) => state.userList);
+  const { loading, error, users } = userList;
+
+  const userLogin = useSelector((state) => state.userLogin);
+  const { userInfo } = userLogin;
+
+  useEffect(() => {
+    if (userInfo) {
+      dispatch(listUsers());
+    } else {
+      history.push("/");
+    }
+  }, [dispatch, history, userInfo]);
+
   const classes = useStyles();
   const theme = useTheme();
   const [open, setOpen] = React.useState(false);
@@ -168,7 +189,30 @@ export default function PersistentDrawerLeft() {
               </TableRow>
             </TableHead>
             <TableBody>
-              <TableRow>
+              {loading ? (
+                <Loader />
+              ) : (
+                users.map((user) => (
+                  <TableRow>
+                    <TableCell component="th" scope="row">
+                      {user.name}
+                    </TableCell>
+                    <TableCell align="right">30%</TableCell>
+                    <TableCell align="right">{user.description}</TableCell>
+                    <TableCell align="right">
+                      <label class="switch">
+                        <input type="checkbox" />
+                        <span class="slider round"></span>
+                      </label>
+                    </TableCell>
+                    <TableCell align="right">
+                      <VisibilityIcon className="actionIcon" /> <EditIcon className="actionIcon" /> <DeleteIcon />
+                    </TableCell>
+                  </TableRow>
+                ))
+              )}
+
+              {/* <TableRow>
                 <TableCell component="th" scope="row">
                   Pant
                 </TableCell>
@@ -219,7 +263,7 @@ export default function PersistentDrawerLeft() {
                   {" "}
                   <VisibilityIcon className="actionIcon" /> <EditIcon className="actionIcon" /> <DeleteIcon />
                 </TableCell>
-              </TableRow>
+              </TableRow> */}
             </TableBody>
           </Table>
         </TableContainer>
